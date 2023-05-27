@@ -13,17 +13,20 @@ class HomeController extends Controller
      */
     public function index(Request $request): View
     {
+
+        $contents = '';
         if ($request->isMethod('post')) {
-            var_dump($this->chat_gpt('日本語で応答してください', 'おはよう'));
+            $prompt = $request->input('prompt');
+            $contents = $this->requestChatGpt($prompt);
         }
-        return view('home', []);
+        return view('home', ['contents'=>$contents]);
     }
 
     /**
      * ChatGPT API呼び出し
      * Laravel HTTP
      */
-    function chat_gpt($system, $user)
+    function requestChatGpt(string $prompt)
     {
         // ChatGPT APIのエンドポイントURL
         $url = "https://api.openai.com/v1/chat/completions";
@@ -43,11 +46,11 @@ class HomeController extends Controller
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => $system
+                    "content" => "日本語で対応してください"
                 ],
                 [
                     "role" => "user",
-                    "content" => $user
+                    "content" => $prompt
                 ]
             ]
         );
