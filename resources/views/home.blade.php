@@ -8,6 +8,13 @@
     <body class="antialiased">
     <div>
         <h1>HOME</h1>
+        <!-- submit-form.blade.php -->
+        <form action="/home" method="POST">
+        @csrf
+        <!-- フォームの入力フィールドやボタンなど -->
+            <button type="submit">送信</button>
+        </form>
+
     </div>
     </body>
 </html>
