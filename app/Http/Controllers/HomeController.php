@@ -19,6 +19,16 @@ class HomeController extends Controller
             $prompt = $request->input('prompt');
             $contents = $this->requestChatGpt($prompt);
         }
+        $start = strpos($contents, '$episodeList =');
+        $end = strpos($contents, ';');
+
+        if ($start !== false && $end !== false) {
+            $episodeListStr = substr($contents, $start, $end - $start + 1);
+            echo $episodeListStr;
+        } else {
+            echo "Cannot find start or end.";
+        }
+
         return view('home', ['contents'=>$contents]);
     }
 
@@ -55,7 +65,7 @@ class HomeController extends Controller
             ]
         );
 
-        $response = Http::withHeaders($headers)->post($url, $data);
+        $response = Http::withHeaders($headers)->timeout(500)->post($url, $data);
 
         if ($response->json('error')) {
             // エラー
@@ -64,5 +74,19 @@ class HomeController extends Controller
 
         return $response->json('choices')[0]['message']['content'];
     }
+//webエンジニアのTVドラマを作るならどんなタイトルを6話分考えてください
+//そしてそれを、phpで扱えるように、各エピソードごとの配列にして,返してください
+//イメージです
+//```
+//$episordList = [['title' => 'タイトル1', 'summary' => '内容1'], ['title' => 'タイトル2', 'summary' => '内容2']];
+//```
+//
+//登場人物は下記です
+//PM：鈴木
+//デザイナー：枝松
+//エンジニア：上柿元
+//エンジニア：宗像
+//
+//#制約条件・エピソードn：「タイトル」という形にしてください・概要：{概要本文}#の形にしてください・一つのコードブロックで返してください
 
 }

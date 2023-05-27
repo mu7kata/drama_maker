@@ -13,7 +13,8 @@
         <form action="/home" method="POST">
             @csrf
             <label>
-                <input type="text" name="prompt" placeholder="内容">
+                <textarea type="text" name="prompt" placeholder="内容">
+                </textarea>
             </label>
             <!-- フォームの入力フィールドやボタンなど -->
             <button type="submit">送信</button>
