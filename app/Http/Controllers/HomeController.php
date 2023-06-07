@@ -19,24 +19,22 @@ class HomeController extends Controller
             $prompt = $request->input('prompt');
             $contents = $this->requestChatGpt($prompt);
         }
-        $start = strpos($contents, '$episodeList =');
-        $end = strpos($contents, ';');
 
-        if ($start !== false && $end !== false) {
-            $episodeListStr = substr($contents, $start, $end - $start + 1);
-            echo $episodeListStr;
-        } else {
-            echo "Cannot find start or end.";
-        }
+        // JSON文字列をPHPの連想配列に変換します
+        $episodeList = json_decode($contents, true);
+        var_dump($episodeList);
+        var_dump('-----');
+        echo $episodeList[0]['title'];
 
-        return view('home', ['contents'=>$contents]);
+
+        return view('home', ['episodeList' => $episodeList]);
     }
 
     /**
      * ChatGPT API呼び出し
      * Laravel HTTP
      */
-    function requestChatGpt(string $prompt)
+    function requestChatGpt(string $prompt,$replay='')
     {
         // ChatGPT APIのエンドポイントURL
         $url = "https://api.openai.com/v1/chat/completions";
@@ -51,7 +49,7 @@ class HomeController extends Controller
         );
 
         // パラメータ
-        $data = array(
+        $data = [
             "model" => "gpt-3.5-turbo",
             "messages" => [
                 [
@@ -61,10 +59,29 @@ class HomeController extends Controller
                 [
                     "role" => "user",
                     "content" => $prompt
+                ],
+                [
+                    "role" => "assistant",
+                    "content" => $replay
                 ]
             ]
-        );
+        ];
 
+        //エラー処理？
+        if (!empty($replay)) {
+            // 配列に新しい要素を一度に追加します
+            $data["messages"] = array_merge($data["messages"], [
+                [
+                    "role" => "assistant",
+                    "content" => $replay
+                ],
+                [
+                    "role" => "user",
+                    "content" => '一つのコードブロックで返してください'
+                ],
+            ]);
+        }
+        var_dump($data["messages"]);
         $response = Http::withHeaders($headers)->timeout(500)->post($url, $data);
 
         if ($response->json('error')) {
@@ -74,19 +91,25 @@ class HomeController extends Controller
 
         return $response->json('choices')[0]['message']['content'];
     }
-//webエンジニアのTVドラマを作るならどんなタイトルを6話分考えてください
-//そしてそれを、phpで扱えるように、各エピソードごとの配列にして,返してください
-//イメージです
-//```
-//$episordList = [['title' => 'タイトル1', 'summary' => '内容1'], ['title' => 'タイトル2', 'summary' => '内容2']];
-//```
+//webエンジニアのTVドラマを作りたいです。
+//下記条件をもとに6話分のタイトルと内容（30文字程度）で考えてください
 //
-//登場人物は下記です
+//
+//### 条件1
+//下記のようなjson形式で返してください
+//```
+//[{"title": "1話のタイトル","summary": "1話の内容"},{ "title": "2話のタイトル", "summary": "2話の内容"}]
+//```
+//### 条件2
+//下記の登場人物を登場させてください
 //PM：鈴木
 //デザイナー：枝松
 //エンジニア：上柿元
 //エンジニア：宗像
 //
-//#制約条件・エピソードn：「タイトル」という形にしてください・概要：{概要本文}#の形にしてください・一つのコードブロックで返してください
-
+//###条件3
+//タイトルは
+//エピソードn：「タイトル」という形にしてください
 }
+
+
