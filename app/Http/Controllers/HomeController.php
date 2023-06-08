@@ -19,9 +19,24 @@ class HomeController extends Controller
     public function index(Request $request): View
     {
         $episodeList = [];
+
+        $theme = $request->input('theme');
+        $positions = $request->input('positions');
+        $names = $request->input('names');
+
+        $castList = [];
+        foreach ($positions as $index => $position) {
+            $name = $names[$index];
+            $castList[] = [
+                'position' => $position,
+                'name' => $name
+            ];
+        }
+        $prompt =  $this->getPrompt($theme,$castList);
+
+        var_dump($prompt);
         if ($request->isMethod('post')) {
-            // プロンプトを取得
-            $prompt = $request->input('prompt');
+
             // ChatGPTへのリクエストを行う
             $response = $this->requestChatGpt($prompt);
 
@@ -130,27 +145,55 @@ class HomeController extends Controller
 
         return $response->json('choices')[0]['message']['content'];
     }
-//webエンジニアのTVドラマを作りたいです。
-//下記条件をもとに4話分のタイトルと内容を下記のようなjson形式で返してください
-//```
-//[{"title": "1話のタイトル","summary": "1話の内容"},{ "title": "2話のタイトル", "summary": "2話の内容"}]
-//```
-//
-//### 条件1
-//下記の登場人物を登場させてください
-//PM：鈴木
-//デザイナー：枝松
-//エンジニア：上柿元
-//エンジニア：宗像
-//
-//###条件2
-//タイトルは
-//エピソードn：「タイトル」という形にしてください
-//### 条件3
-//各話の内容は50文字〜100文字で生成してください
-//
-// ### 条件4
-//ドラマの全体的なストーリーを考慮して構成してください
+
+    /**
+     * @return string
+     */
+    public function getPrompt(string $theme,array $castList): string
+    {
+//        $theme = "webエンジニアのTVドラマ";
+//        $castList = [
+//            [
+//                'position' => 'PM',
+//                'name' => '鈴木'
+//            ],
+//            [
+//                'position' => 'デザイナー',
+//                'name' => '枝松'
+//            ],
+//            [
+//                'position' => 'エンジニア',
+//                'name' => '上柿元'
+//            ],
+//            [
+//                'position' => 'エンジニア',
+//                'name' => '宗像'
+//            ]
+//        ];
+        $castString = '';
+        foreach ($castList as $cast) {
+            $castString .= $cast['position'] . '：' . $cast['name'] . "/\n";
+        }
+
+        $prompt = "${theme}を作りたいです。
+        下記条件をもとに4話分のタイトルと内容を下記のようなjson形式で返してください
+        ```
+        [{'title': '1話のタイトル','summary': '1話の内容'},{ 'title': '2話のタイトル', 'summary': '2話の内容'}]
+        ```
+        ### 条件1
+        下記の登場人物を登場させてください
+        ${castString}
+
+        ###条件2
+        タイトルは
+        エピソードn：「タイトル」という形にしてください
+        ### 条件3
+        各話の内容は50文字〜100文字で生成してください
+        ### 条件4
+        ドラマの全体的なストーリーを考慮して構成してください";
+
+        return $prompt;
+    }
 }
 
 
