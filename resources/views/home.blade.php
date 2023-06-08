@@ -35,8 +35,8 @@
         }
 
         input[type=text] {
-            width: 100%;
-            padding: 10px;
+            width: 97%;
+            padding: 8px;
             margin-bottom: 20px;
             border-radius: 4px;
             border: 1px solid #CCC;
@@ -63,45 +63,53 @@
         }
 
         .character input[type=text] {
-            width: 45%; /* ある程度の間隔を保つために 50% 未満に設定 */
+            width: 46%; /* ある程度の間隔を保つために 50% 未満に設定 */
         }
     </style>
 </head>
 <body class="antialiased">
 <div class="container">
-    <h1>HOME</h1>
+    <h1>AIドラマメーカー</h1>
     <!-- submit-form.blade.php -->
     <div>
-        <form action="/home" method="POST">
+        <form action="/submitForm" method="POST">
             @csrf
             <label for="theme">テーマ:</label>
-            <input type="text" id="theme" name="theme" value="" required>
+            <input type="text" id="theme" name="theme" value="{{ session('theme') }}" >
 
-            <div class="character">
-                <label for="position1">登場人物1</label>
+            <div class="">
+                <label for="position2">登場人物1</label>
+                <div class="character">
                 <input type="text" id="position1" name="positions[]" placeholder="ポジション"
-                       value="{{ old('positions.0') }}" required>
-                <input type="text" id="name1" name="names[]" placeholder="名前" value="{{ old('names.0') }}" required>
+                       value="{{ session('positions.0') }}" >
+                <input type="text" id="name1" name="names[]" placeholder="名前" value="{{ session('names.0') }}" >
+            </div>
             </div>
 
-            <div class="character">
+            <div>
                 <label for="position2">登場人物2</label>
-                <input type="text" id="position2" name="positions[]" placeholder="ポジション"
-                       value="{{ old('positions.1') }}" required>
-                <input type="text" id="name2" name="names[]" placeholder="名前" value="{{ old('names.1') }}" required>
+                <div class="character">
+                    <input type="text" id="position2" name="positions[]" placeholder="ポジション"
+                           value="{{ session('positions.1') }}" >
+                    <input type="text" id="name2" name="names[]" placeholder="名前" value="{{ session('names.1') }}" >
+                </div>
             </div>
-            <div class="character">
-                <label for="position1">登場人物3</label>
+            <div class="">
+                <label for="position2">登場人物3</label>
+                <div class="character">
                 <input type="text" id="position3" name="positions[]" placeholder="ポジション"
-                       value="{{ old('positions.3') }}" required>
-                <input type="text" id="name3" name="names[]" placeholder="名前" value="{{ old('names.3') }}" required>
+                       value="{{ session('positions.2') }}" >
+                <input type="text" id="name3" name="names[]" placeholder="名前" value="{{ session('names.2') }}" >
+                </div>
             </div>
 
-            <div class="character">
+            <div class="">
                 <label for="position2">登場人物4</label>
+                <div class="character">
                 <input type="text" id="position4" name="positions[]" placeholder="ポジション"
-                       value="{{ old('positions.4') }}" required>
-                <input type="text" id="name4" name="names[]" placeholder="名前" value="{{ old('names.4') }}" required>
+                       value="{{ session('positions.3') }}" >
+                <input type="text" id="name4" name="names[]" placeholder="名前" value="{{ session('names.3') }}" >
+                </div>
             </div>
 
             <!-- 他の登場人物も同様に -->

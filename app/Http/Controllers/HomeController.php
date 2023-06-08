@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Http;
 
@@ -18,25 +21,35 @@ class HomeController extends Controller
      */
     public function index(Request $request): View
     {
-        $episodeList = [];
+        $episodeList = $request->session()->get('episodeList', []);
 
-        $theme = $request->input('theme');
-        $positions = $request->input('positions');
-        $names = $request->input('names');
+        // ホームビューをエピソードリストと共に返す
+        return view('home', ['episodeList' => $episodeList]);
+    }
 
-        $castList = [];
-        foreach ($positions as $index => $position) {
-            $name = $names[$index];
-            $castList[] = [
-                'position' => $position,
-                'name' => $name
-            ];
-        }
-        $prompt =  $this->getPrompt($theme,$castList);
 
-        var_dump($prompt);
+    /**
+     * @param Request $request
+     * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
+     */
+    public function submitForm(Request $request): \Illuminate\Foundation\Application|Redirector|RedirectResponse|Application
+    {
+
         if ($request->isMethod('post')) {
+            $episodeList = [];
+            $theme = $request->input('theme');
+            $positions = $request->input('positions');
+            $names = $request->input('names');
 
+            $castList = [];
+            foreach ($positions as $index => $position) {
+                $name = $names[$index];
+                $castList[] = [
+                    'position' => $position,
+                    'name' => $name
+                ];
+            }
+            $prompt = $this->getPrompt($theme, $castList);
             // ChatGPTへのリクエストを行う
             $response = $this->requestChatGpt($prompt);
 
@@ -47,11 +60,16 @@ class HomeController extends Controller
                 // コンテンツが存在する場合、JSON文字列をPHPの連想配列に変換
                 $episodeList = json_decode($contents, true);
             }
+            $request->session()->put('theme', $theme);
+            $request->session()->put('positions', $positions);
+            $request->session()->put('names', $names);
+            $request->session()->put('episodeList', $episodeList);
         }
 
-        // ホームビューをエピソードリストと共に返す
-        return view('home', ['episodeList' => $episodeList]);
+        return redirect('/home');
     }
+
+
 
     /**
      * レスポンスからコンテンツを抽出する。
@@ -176,7 +194,7 @@ class HomeController extends Controller
         }
 
         $prompt = "${theme}を作りたいです。
-        下記条件をもとに4話分のタイトルと内容を下記のようなjson形式で返してください
+        下記条件をもとに6話分のタイトルと内容を下記のようなjson形式で返してください
         ```
         [{'title': '1話のタイトル','summary': '1話の内容'},{ 'title': '2話のタイトル', 'summary': '2話の内容'}]
         ```
@@ -188,7 +206,7 @@ class HomeController extends Controller
         タイトルは
         エピソードn：「タイトル」という形にしてください
         ### 条件3
-        各話の内容は50文字〜100文字で生成してください
+        各話の内容は150文字〜200文字で生成してください
         ### 条件4
         ドラマの全体的なストーリーを考慮して構成してください";
 
