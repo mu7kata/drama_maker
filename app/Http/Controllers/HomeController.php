@@ -8,54 +8,73 @@ use Illuminate\Support\Facades\Http;
 
 class HomeController extends Controller
 {
+
     /**
+     * インデックスページを表示する。
+     * ポストリクエストがあった場合、ChatGPTへのリクエスト結果をビューに渡す
      *
+     * @param Request $request
+     * @return View
      */
     public function index(Request $request): View
     {
-
-        $contents = '';
-
-
-        if ($request->isMethod('post')) {
-            $prompt = $request->input('prompt');
-            $response = $this->requestChatGpt($prompt);
-            echo $response;
-            if ($this->isJson($response)) {
-                $contents = $response;
-            } else {
-                preg_match('/```json(.*)```/s', $response, $matches);
-                if (!isset($matches[1])) {
-                    preg_match('/```(.*)```/s', $response, $matches);
-                }
-                $contents = $matches[1];
-            }
-
-        echo $response;
-        }
         $episodeList = [];
-        if (!empty($contents)) {
-            // JSON文字列をPHPの連想配列に変換します
-            $episodeList = json_decode($contents, true);
+        if ($request->isMethod('post')) {
+            // プロンプトを取得
+            $prompt = $request->input('prompt');
+            // ChatGPTへのリクエストを行う
+            $response = $this->requestChatGpt($prompt);
+
+            // レスポンスからコンテンツを抽出
+            $contents = $this->extractContentsFromResponse($response);
+
+            if (!empty($contents)) {
+                // コンテンツが存在する場合、JSON文字列をPHPの連想配列に変換
+                $episodeList = json_decode($contents, true);
+            }
         }
 
+        // ホームビューをエピソードリストと共に返す
         return view('home', ['episodeList' => $episodeList]);
     }
 
-    function isJson($string) {
+    /**
+     * レスポンスからコンテンツを抽出する。
+     * JSON形式かチェックし、そうでない場合は特定のパターンで探す
+     *
+     * @param string $response
+     * @return string
+     */
+    private function extractContentsFromResponse(string $response): string
+    {
+        // レスポンスがJSON形式の場合、そのまま返す
+        if ($this->isJson($response)) {
+            return $response;
+        }
+
+        // レスポンスが特定のパターンを持つ場合、それを抽出
+        preg_match('/```json(.*)```/s', $response, $matches);
+        if (!isset($matches[1])) {
+            preg_match('/```(.*)```/s', $response, $matches);
+        }
+
+        // マッチしたものがなければ空文字を返す
+        return $matches[1] ?? '';
+    }
+
+
+    function isJson($string)
+    {
         json_decode($string);
         return (json_last_error() == JSON_ERROR_NONE);
     }
 
-    function removeBackticks($string) {
-        return str_replace('```', '', $string);
-    }
 
     /**
      * ChatGPT API呼び出し
      * Laravel HTTP
      */
-    function requestChatGpt(string $prompt,$replay='')
+    function requestChatGpt(string $prompt, $replay = '')
     {
         // ChatGPT APIのエンドポイントURL
         $url = "https://api.openai.com/v1/chat/completions";
@@ -89,19 +108,19 @@ class HomeController extends Controller
         ];
 
         //エラー処理？
-        if (!empty($replay)) {
-            // 配列に新しい要素を一度に追加します
-            $data["messages"] = array_merge($data["messages"], [
-                [
-                    "role" => "assistant",
-                    "content" => $replay
-                ],
-                [
-                    "role" => "user",
-                    "content" => '命令に従ってjson形式で返してください'
-                ],
-            ]);
-        }
+//        if (!empty($replay)) {
+//            // 配列に新しい要素を一度に追加します
+//            $data["messages"] = array_merge($data["messages"], [
+//                [
+//                    "role" => "assistant",
+//                    "content" => $replay
+//                ],
+//                [
+//                    "role" => "user",
+//                    "content" => '命令に従ってjson形式で返してください'
+//                ],
+//            ]);
+//        }
         $response = Http::withHeaders($headers)->timeout(500)->post($url, $data);
 
         if ($response->json('error')) {
