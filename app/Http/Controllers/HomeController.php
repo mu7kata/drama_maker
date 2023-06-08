@@ -15,19 +15,40 @@ class HomeController extends Controller
     {
 
         $contents = '';
+
+
         if ($request->isMethod('post')) {
             $prompt = $request->input('prompt');
-            $contents = $this->requestChatGpt($prompt);
+            $response = $this->requestChatGpt($prompt);
+            echo $response;
+            if ($this->isJson($response)) {
+                $contents = $response;
+            } else {
+                preg_match('/```json(.*)```/s', $response, $matches);
+                if (!isset($matches[1])) {
+                    preg_match('/```(.*)```/s', $response, $matches);
+                }
+                $contents = $matches[1];
+            }
+
+        echo $response;
+        }
+        $episodeList = [];
+        if (!empty($contents)) {
+            // JSON文字列をPHPの連想配列に変換します
+            $episodeList = json_decode($contents, true);
         }
 
-        // JSON文字列をPHPの連想配列に変換します
-        $episodeList = json_decode($contents, true);
-        var_dump($episodeList);
-        var_dump('-----');
-        echo $episodeList[0]['title'];
-
-
         return view('home', ['episodeList' => $episodeList]);
+    }
+
+    function isJson($string) {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+
+    function removeBackticks($string) {
+        return str_replace('```', '', $string);
     }
 
     /**
@@ -77,11 +98,10 @@ class HomeController extends Controller
                 ],
                 [
                     "role" => "user",
-                    "content" => '一つのコードブロックで返してください'
+                    "content" => '命令に従ってjson形式で返してください'
                 ],
             ]);
         }
-        var_dump($data["messages"]);
         $response = Http::withHeaders($headers)->timeout(500)->post($url, $data);
 
         if ($response->json('error')) {
@@ -92,24 +112,26 @@ class HomeController extends Controller
         return $response->json('choices')[0]['message']['content'];
     }
 //webエンジニアのTVドラマを作りたいです。
-//下記条件をもとに6話分のタイトルと内容（30文字程度）で考えてください
-//
-//
-//### 条件1
-//下記のようなjson形式で返してください
+//下記条件をもとに4話分のタイトルと内容を下記のようなjson形式で返してください
 //```
 //[{"title": "1話のタイトル","summary": "1話の内容"},{ "title": "2話のタイトル", "summary": "2話の内容"}]
 //```
-//### 条件2
+//
+//### 条件1
 //下記の登場人物を登場させてください
 //PM：鈴木
 //デザイナー：枝松
 //エンジニア：上柿元
 //エンジニア：宗像
 //
-//###条件3
+//###条件2
 //タイトルは
 //エピソードn：「タイトル」という形にしてください
+//### 条件3
+//各話の内容は50文字〜100文字で生成してください
+//
+// ### 条件4
+//ドラマの全体的なストーリーを考慮して構成してください
 }
 
 

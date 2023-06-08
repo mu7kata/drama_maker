@@ -21,7 +21,12 @@
         </form>
     </div>
     <div>
-        {{$contents}}
+        @if (!empty($episodeList))
+            @foreach ($episodeList as $episode)
+                <h2>{{ $episode['title'] }}</h2>
+                <p>{{ $episode['summary'] }}</p>
+            @endforeach
+        @endif
     </div>
 
 </div>
