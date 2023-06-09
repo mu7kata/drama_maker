@@ -19,7 +19,7 @@ class HomeController extends Controller
      * @param Request $request
      * @return View
      */
-    public function index(Request $request): View
+    public function home(Request $request): View
     {
         $episodeList = $request->session()->get('episodeList', []);
 
