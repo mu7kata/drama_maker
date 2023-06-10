@@ -34,7 +34,11 @@ class HomeController extends Controller
     public function submitForm(Request $request): \Illuminate\Foundation\Application|Redirector|RedirectResponse|Application
     {
         if ($request->isMethod('post')) {
-            $this->processPostRequest($request);
+            try {
+                $this->processPostRequest($request);
+            } catch (\Exception $e) {
+                $request->session()->put('error', '生成に失敗しました。再度実行してください');
+            }
         }
 
         return redirect('/home');
@@ -44,6 +48,7 @@ class HomeController extends Controller
      * ポストリクエストを処理し、データをセッションに保存する
      *
      * @param Request $request
+     * @throws \Exception
      */
     protected function processPostRequest(Request $request)
     {
@@ -98,14 +103,21 @@ class HomeController extends Controller
      *
      * @param array $data
      * @return array
+     * @throws \Exception
      */
-    protected function createEpisodeList(array $data): array
+    protected function createEpisodeList(array $data)
     {
         $prompt = $this->getPrompt($data['theme'], $data['castList']);
         // ChatGPTへのリクエストを行う
         $response = $this->requestChatGpt($prompt);
         // レスポンスからコンテンツを抽出
         $contents = $this->extractContentsFromResponse($response);
+
+        //$contentsが空だったら例外処理
+        if (empty($contents)) {
+            throw new \Exception('No contents found in the response');
+        }
+
         // コンテンツが存在する場合、JSON文字列をPHPの連想配列に変換
         return empty($contents) ? [] : json_decode($contents, true);
     }
@@ -122,7 +134,6 @@ class HomeController extends Controller
             $request->session()->put($key, $value);
         }
     }
-
 
 
     /**
@@ -235,8 +246,8 @@ class HomeController extends Controller
             $castString .= $cast['position'] . '：' . $cast['name'] . "/\n";
         }
 
-        $prompt = "${theme}を作りたいです。
-        下記条件をもとに6話分のタイトルと内容を下記のようなjson形式で返してください
+        $prompt = "${theme}をテーマにしたTVドラマを作りたいです。
+        下記条件をもとに6話分のタイトルと内容を考えて、下記のようなjson形式で返してください
         ```
         [{'title': '1話のタイトル','summary': '1話の内容'},{ 'title': '2話のタイトル', 'summary': '2話の内容'}]
         ```
@@ -250,7 +261,7 @@ class HomeController extends Controller
         ### 条件3
         各話の内容は150文字〜200文字で生成してください
         ### 条件4
-        ドラマの全体的なストーリーを考慮しつつ、シュールな展開になるように構成してください";
+        6話目が最終回となるよう、ドラマの全体的なストーリーを考慮しつつ、展開を構成してください";
 
         return $prompt;
     }
