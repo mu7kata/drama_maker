@@ -60,7 +60,7 @@ class HomeController extends Controller
         $data = $this->getRequestData($request);
         // エピソードリストを作成
         $episodeList = $this->createEpisodeList($data);
-        $imgPromptList = $this->getImgPromptList($data['theme'],$episodeList);
+        $imgPromptList = $this->getImgPromptList($data['theme'], $episodeList);
 
         $imgList = [];
         foreach ($imgPromptList as $imgPrompt) {
@@ -71,7 +71,7 @@ class HomeController extends Controller
         }
 
         // データをセッションに保存
-        $this->storeDataInSession($request, $data + ['episodeList' => $episodeList]);
+        $this->storeDataInSession($request, ['episodeList' => $episodeList]);
     }
 
     /**
@@ -87,8 +87,9 @@ class HomeController extends Controller
         $names = $request->input('names');
 
         $castList = $this->getCastList($positions, $names);
-
-        return compact('theme', 'castList');
+        $requestData = compact('theme', 'castList');
+        $this->storeDataInSession($request, $requestData);
+        return $requestData;
     }
 
     /**
@@ -215,7 +216,7 @@ class HomeController extends Controller
 
         if ($response->json('error')) {
             // エラー
-            Log::error('requestImage:error'.$response->json('error')['message']);
+            Log::error('requestImage:error' . $response->json('error')['message']);
             return $response->json('error')['message'];
         }
         return $response->json('data')[0]['url'];
@@ -327,7 +328,7 @@ class HomeController extends Controller
     {
         $prompt = [];
         foreach ($episodeList as $episode) {
-            $prompt[] = '「' . $theme . '」、' . '「' . $episode['title'] . '」,landscape painting,hyper realistic, 8K';
+            $prompt[] = '「' . $theme . '」、' . '「' . $episode['title'] . '」,hyper realistic, 8K';
         }
 
         return $prompt;
