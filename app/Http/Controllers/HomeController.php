@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Http;
 
@@ -16,14 +19,68 @@ class HomeController extends Controller
      * @param Request $request
      * @return View
      */
-    public function index(Request $request): View
+    public function home(Request $request): View
     {
-        $episodeList = [];
+        $episodeList = $request->session()->get('episodeList', []);
 
+        // ホームビューをエピソードリストと共に返す
+        return view('home', ['episodeList' => $episodeList]);
+    }
+
+    /**
+     * @param Request $request
+     * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
+     */
+    public function submitForm(Request $request): \Illuminate\Foundation\Application|Redirector|RedirectResponse|Application
+    {
+        if ($request->isMethod('post')) {
+            $this->processPostRequest($request);
+        }
+
+        return redirect('/home');
+    }
+
+    /**
+     * ポストリクエストを処理し、データをセッションに保存する
+     *
+     * @param Request $request
+     */
+    protected function processPostRequest(Request $request)
+    {
+        // リクエストからデータを取得
+        $data = $this->getRequestData($request);
+        // エピソードリストを作成
+        $episodeList = $this->createEpisodeList($data);
+        // データをセッションに保存
+        $this->storeDataInSession($request, $data + ['episodeList' => $episodeList]);
+    }
+
+    /**
+     * リクエストからデータを取得する
+     *
+     * @param Request $request
+     * @return array
+     */
+    protected function getRequestData(Request $request): array
+    {
         $theme = $request->input('theme');
         $positions = $request->input('positions');
         $names = $request->input('names');
 
+        $castList = $this->getCastList($positions, $names);
+
+        return compact('theme', 'castList');
+    }
+
+    /**
+     * ポジションと名前からキャストリストを生成する
+     *
+     * @param array $positions
+     * @param array $names
+     * @return array
+     */
+    protected function getCastList(array $positions, array $names): array
+    {
         $castList = [];
         foreach ($positions as $index => $position) {
             $name = $names[$index];
@@ -32,26 +89,41 @@ class HomeController extends Controller
                 'name' => $name
             ];
         }
-        $prompt =  $this->getPrompt($theme,$castList);
 
-        var_dump($prompt);
-        if ($request->isMethod('post')) {
-
-            // ChatGPTへのリクエストを行う
-            $response = $this->requestChatGpt($prompt);
-
-            // レスポンスからコンテンツを抽出
-            $contents = $this->extractContentsFromResponse($response);
-
-            if (!empty($contents)) {
-                // コンテンツが存在する場合、JSON文字列をPHPの連想配列に変換
-                $episodeList = json_decode($contents, true);
-            }
-        }
-
-        // ホームビューをエピソードリストと共に返す
-        return view('home', ['episodeList' => $episodeList]);
+        return $castList;
     }
+
+    /**
+     * エピソードリストを作成する
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function createEpisodeList(array $data): array
+    {
+        $prompt = $this->getPrompt($data['theme'], $data['castList']);
+        // ChatGPTへのリクエストを行う
+        $response = $this->requestChatGpt($prompt);
+        // レスポンスからコンテンツを抽出
+        $contents = $this->extractContentsFromResponse($response);
+        // コンテンツが存在する場合、JSON文字列をPHPの連想配列に変換
+        return empty($contents) ? [] : json_decode($contents, true);
+    }
+
+    /**
+     * データをセッションに保存する
+     *
+     * @param Request $request
+     * @param array $data
+     */
+    protected function storeDataInSession(Request $request, array $data): void
+    {
+        foreach ($data as $key => $value) {
+            $request->session()->put($key, $value);
+        }
+    }
+
+
 
     /**
      * レスポンスからコンテンツを抽出する。
@@ -77,8 +149,11 @@ class HomeController extends Controller
         return $matches[1] ?? '';
     }
 
-
-    function isJson($string)
+    /**
+     * @param $string
+     * @return bool
+     */
+    function isJson($string): bool
     {
         json_decode($string);
         return (json_last_error() == JSON_ERROR_NONE);
@@ -147,36 +222,21 @@ class HomeController extends Controller
     }
 
     /**
+     * @param string $theme
+     * @param array $castList
      * @return string
      */
-    public function getPrompt(string $theme,array $castList): string
+    public function getPrompt(string $theme, array $castList): string
     {
-//        $theme = "webエンジニアのTVドラマ";
-//        $castList = [
-//            [
-//                'position' => 'PM',
-//                'name' => '鈴木'
-//            ],
-//            [
-//                'position' => 'デザイナー',
-//                'name' => '枝松'
-//            ],
-//            [
-//                'position' => 'エンジニア',
-//                'name' => '上柿元'
-//            ],
-//            [
-//                'position' => 'エンジニア',
-//                'name' => '宗像'
-//            ]
-//        ];
+
         $castString = '';
+
         foreach ($castList as $cast) {
             $castString .= $cast['position'] . '：' . $cast['name'] . "/\n";
         }
 
         $prompt = "${theme}を作りたいです。
-        下記条件をもとに4話分のタイトルと内容を下記のようなjson形式で返してください
+        下記条件をもとに6話分のタイトルと内容を下記のようなjson形式で返してください
         ```
         [{'title': '1話のタイトル','summary': '1話の内容'},{ 'title': '2話のタイトル', 'summary': '2話の内容'}]
         ```
@@ -188,9 +248,9 @@ class HomeController extends Controller
         タイトルは
         エピソードn：「タイトル」という形にしてください
         ### 条件3
-        各話の内容は50文字〜100文字で生成してください
+        各話の内容は150文字〜200文字で生成してください
         ### 条件4
-        ドラマの全体的なストーリーを考慮して構成してください";
+        ドラマの全体的なストーリーを考慮しつつ、シュールな展開になるように構成してください";
 
         return $prompt;
     }

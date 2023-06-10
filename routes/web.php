@@ -18,6 +18,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/home', [HomeController::class, 'index']);
-Route::post('/home', [HomeController::class, 'index']);
+Route::get('/home', [HomeController::class, 'home']);
+Route::post('/submitForm', [HomeController::class, 'submitForm']);
 
