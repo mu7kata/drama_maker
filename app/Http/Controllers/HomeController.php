@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
 
 class HomeController extends Controller
 {
@@ -33,6 +35,8 @@ class HomeController extends Controller
      */
     public function submitForm(Request $request): \Illuminate\Foundation\Application|Redirector|RedirectResponse|Application
     {
+        $request->session()->forget('error');
+
         if ($request->isMethod('post')) {
             try {
                 $this->processPostRequest($request);
@@ -56,6 +60,16 @@ class HomeController extends Controller
         $data = $this->getRequestData($request);
         // エピソードリストを作成
         $episodeList = $this->createEpisodeList($data);
+        $imgPromptList = $this->getImgPromptList($data['theme'],$episodeList);
+
+        $imgList = [];
+        foreach ($imgPromptList as $imgPrompt) {
+            $imgList[] = $this->requestImage($imgPrompt);
+        }
+        foreach ($episodeList as $key => $episode) {
+            $episodeList[$key]['img'] = $imgList[$key];
+        }
+
         // データをセッションに保存
         $this->storeDataInSession($request, $data + ['episodeList' => $episodeList]);
     }
@@ -172,11 +186,49 @@ class HomeController extends Controller
 
 
     /**
+     * @param $prompt
+     * @return mixed
+     */
+    function requestImage($prompt): mixed
+    {
+        Log::info('requestImage:start');
+        $url = "https://api.openai.com/v1/images/generations";
+        // ChatGPT APIのエンドポイントURL
+
+        // APIキー
+        $api_key = env('OPENAI_API_KEY');
+
+        // ヘッダー
+        $headers = array(
+            "Content-Type" => "application/json",
+            "Authorization" => "Bearer $api_key"
+        );
+
+        // パラメータ
+        $data = [
+            "prompt" => $prompt,
+            "n" => 1,
+            "size" => "256x256"
+        ];
+
+        $response = Http::withHeaders($headers)->timeout(500)->post($url, $data);
+
+        if ($response->json('error')) {
+            // エラー
+            Log::error('requestImage:error'.$response->json('error')['message']);
+            return $response->json('error')['message'];
+        }
+        return $response->json('data')[0]['url'];
+    }
+
+
+    /**
      * ChatGPT API呼び出し
      * Laravel HTTP
      */
     function requestChatGpt(string $prompt, $replay = '')
     {
+        Log::info('requestChatGpt:start');
         // ChatGPT APIのエンドポイントURL
         $url = "https://api.openai.com/v1/chat/completions";
 
@@ -262,6 +314,21 @@ class HomeController extends Controller
         各話の内容は150文字〜200文字で生成してください
         ### 条件4
         6話目が最終回となるよう、ドラマの全体的なストーリーを考慮しつつ、展開を構成してください";
+
+        return $prompt;
+    }
+
+    /**
+     * @param $theme
+     * @param $episodeList
+     * @return array
+     */
+    public function getImgPromptList($theme, $episodeList): array
+    {
+        $prompt = [];
+        foreach ($episodeList as $episode) {
+            $prompt[] = '「' . $theme . '」、' . '「' . $episode['title'] . '」,landscape painting,hyper realistic, 8K';
+        }
 
         return $prompt;
     }

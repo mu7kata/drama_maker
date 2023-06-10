@@ -125,6 +125,7 @@
         @if (!empty($episodeList))
             @foreach ($episodeList as $episode)
                 <h2>{{ $episode['title'] }}</h2>
+                <img src="{{ $episode['img'] }}" alt="">
                 <p>{{ $episode['summary'] }}</p>
             @endforeach
         @endif
