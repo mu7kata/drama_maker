@@ -66,11 +66,37 @@
         .character input[type=text] {
             width: 46%; /* ある程度の間隔を保つために 50% 未満に設定 */
         }
-        img{
+
+        .episodeImg {
             width: 216px;
             height: 170px;
-            object-fit:cover;
+            object-fit: cover;
         }
+
+        .loadingOverlay {
+            position: fixed; /* Fixed positioning so the overlay covers the whole screen */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            z-index: 1000; /* High z-index so it appears above everything else */
+
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center the loading message */
+        }
+
+        .loadingContent {
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .loadingImg {
+            width: 50px;
+        }
+
     </style>
 </head>
 <body class="antialiased">
