@@ -8,13 +8,13 @@
                     <p>ファンタジー要素のある刑事物語/漫画「鬼滅の刃」の別の世界線の物語/webエンジニアの成長物語</p>
                 </div>
                 <label for="theme">テーマ:</label>
-                <input type="text" id="theme" v-model="theme">
-
+                <input type="text" id="theme" name="theme" v-model="theme">
+                <p>{{ errorMessage }}</p>
                 <div v-for="(cast, index) in castList" :key="index">
                     <label :for="'position' + index">登場人物{{ index + 1 }}</label>
                     <div class="character">
-                        <input type="text" :id="'position' + index" v-model="cast.position" placeholder="ポジション">
-                        <input type="text" :id="'name' + index" v-model="cast.name" placeholder="名前">
+                        <input type="text" :id="'position' + index" v-model="cast.position" placeholder="ポジション" required>
+                        <input type="text" :id="'name' + index" v-model="cast.name" placeholder="名前" required>
                     </div>
                 </div>
 
@@ -40,9 +40,13 @@
 <script setup>
 import {ref, reactive} from 'vue';
 import axios from 'axios';
+import {useField} from 'vee-validate';
+import { required } from '@vee-validate/rules';
 
-console.log('test');
-const theme = ref('');
+
+//TODO:バリデーション整理する。テスト的に実装
+const {value: theme, errorMessage} = useField('theme', required);
+// const testModel = ref('');
 const episodeList = ref([]);
 const castList = reactive({
     0: {position: '', name: ''},
@@ -50,10 +54,9 @@ const castList = reactive({
     2: {position: '', name: ''},
     3: {position: '', name: ''},
 });
+console.log(theme.value);
 
 async function submitForm() {
-    console.log(theme.value);  // テーマの値にアクセス
-    console.log(castList[0].name);  // 登場人物の値にアクセス
     const postData = {
         theme: theme.value,
         castList: castList,
