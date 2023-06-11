@@ -13,6 +13,7 @@
         "vue": "^3.3.4"
     },
     "dependencies": {
+        "@vee-validate/rules": "^4.9.6",
         "vee-validate": "^4.9.6"
     }
 }
