@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1>AI あらすじメーカー</h1>
-        <div>
+        <div class="">
             <button @click="setThema('manga')">有名アニメの続編</button>
             <button @click="setThema('movie')">有名映画の続編</button>
             <button @click="setThema('work')">仕事系</button>
