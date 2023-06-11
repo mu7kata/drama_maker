@@ -20,4 +20,5 @@ Route::get('/', function () {
 
 Route::get('/home', [HomeController::class, 'home']);
 Route::post('/submitForm', [HomeController::class, 'submitForm']);
+Route::post('/api/create-episode-list', [HomeController::class, 'createEpisodeListRequest']);
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\EpisodeService;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -35,6 +36,33 @@ class HomeController extends Controller
         // ホームビューをエピソードリストと共に返す
         return view('home', ['episodeList' => $episodeList]);
     }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function createEpisodeListRequest(Request $request): JsonResponse
+    {
+        Log::info('------createEpisodeListRequest:start------ ');
+        //{"theme":"","castList":[{"position":"","name":""},{"position":"","name":""},{"position":"","name":""}]}
+        $requestData = json_decode($request->getContent(), true); //['message' => $requestData['castList'][0]['position']
+        $episodeList = [];
+        try {
+            $episodeList = $this->episodeService->processPostRequest($requestData);
+            Log::info('------createEpisodeListRequest:end------ ');
+        } catch (Exception $e) {
+            Log::error('------createEpisodeListRequest:error------ ' . $e->getMessage());
+        }
+
+// APIリクエストしないでのテスト用
+//        $episodeList = [
+//            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646'],
+//            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646'],
+//            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646']
+//        ];
+        return response()->json(['episodeList' => $episodeList]);
+    }
+
 
     /**
      * @param Request $request
