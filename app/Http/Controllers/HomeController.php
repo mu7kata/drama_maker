@@ -47,19 +47,19 @@ class HomeController extends Controller
         //{"theme":"","castList":[{"position":"","name":""},{"position":"","name":""},{"position":"","name":""}]}
         $requestData = json_decode($request->getContent(), true); //['message' => $requestData['castList'][0]['position']
         $episodeList = [];
-        try {
-            $episodeList = $this->episodeService->processPostRequest($requestData);
-            Log::info('------createEpisodeListRequest:end------ ');
-        } catch (Exception $e) {
-            Log::error('------createEpisodeListRequest:error------ ' . $e->getMessage());
-        }
+//        try {
+//            $episodeList = $this->episodeService->processPostRequest($requestData);
+//            Log::info('------createEpisodeListRequest:end------ ');
+//        } catch (Exception $e) {
+//            Log::error('------createEpisodeListRequest:error------ ' . $e->getMessage());
+//        }
 
 // APIリクエストしないでのテスト用
-//        $episodeList = [
-//            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646'],
-//            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646'],
-//            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646']
-//        ];
+        $episodeList = [
+            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646'],
+            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646'],
+            ['title' => 'title', 'summary' => 'summary', 'img' => 'https://thetv.jp/i/tl/100/0091/1000091832_r.jpg?w=646']
+        ];
         return response()->json(['episodeList' => $episodeList]);
     }
 
