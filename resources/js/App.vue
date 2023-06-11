@@ -77,8 +77,6 @@ const errorMsg = ref('');
 
 
 function setThema(genre) {
-    console.log('setThema');
-    console.log(genre);
     const themeWork = [
         {position: '上司', name: '上柿元(男)'},
         {position: '新人', name: '野島(男)'},
@@ -137,26 +135,21 @@ function setThema(genre) {
 }
 
 async function submitForm() {
-    console.log(1);
     //不正クリック対策
     if (isLoading.value === true) {
         return;
     }
-    console.log(castList);
     isLoading.value = true;
     const postData = {
         theme: theme.value,
         castList: castList.value,
     };
-    console.log(postData);
     errorMsg.value ='';
     await axios.post('/api/create-episode-list', postData)
         .then(response => {
-    console.log(response.data);
             episodeList.value = response.data.episodeList;
         })
         .catch(error => {
-    console.log(5);
             console.log(error);
             errorMsg.value = '生成に失敗しました、再度実行してください'
             // TODO:エラーが発生した場合の処理かく
@@ -164,8 +157,6 @@ async function submitForm() {
         .finally(() => {
             isLoading.value = false; // Set loading flag to false whether the request succeeded or failed
         });
-    console.log(6);
-
 }
 
 
