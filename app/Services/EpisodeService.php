@@ -48,6 +48,7 @@ class EpisodeService
      */
     public function processPostRequest($requestData): array
     {
+        Log::info('------processPostRequest:start------ ');
         // エピソードリストを作成
         $episodeList = $this->createEpisodeList($requestData);
         $imgPromptList = $this->getImgPromptList($requestData['theme'], $episodeList);
@@ -60,6 +61,7 @@ class EpisodeService
             $episodeList[$key]['img'] = $imgList[$key];
         }
 
+        Log::info('------processPostRequest:end------ ');
         return $episodeList;
     }
 
@@ -82,9 +84,14 @@ class EpisodeService
         if (empty($contents)) {
             throw new Exception('No contents found in the response');
         }
+        // $contentsがnullでない場合にのみデコードする
+        $decodedContents = json_decode($contents, true);
 
+        if ($decodedContents === null) {
+            throw new Exception('Failed to decode JSON contents');
+        }
         // コンテンツが存在する場合、JSON文字列をPHPの連想配列に変換
-        return json_decode($contents, true);
+        return $decodedContents;
     }
 
     /**
