@@ -19,6 +19,10 @@
                         </div>
                     </div>
                 </div>
+            <div class="px-5 pb-3">
+                <button class="btn btn-primary">シーズン2を生成する</button>
+                ※ 未実装
+            </div>
             </div>
         </div>
         <div class="">
