@@ -1,11 +1,13 @@
-### AIあらすじメーカー
+# AIあらすじメーカー
+
+### URL
+http://munakata-games.achoo.jp/home
 
 ### 概要
 入力した情報に基に、6話分のあらすじがAIにて自動生成してくれるサービス
 
 
-### URL
-http://munakata-games.achoo.jp/home
+
 
 ### 技術スタック
 Laravel ver.10.8
