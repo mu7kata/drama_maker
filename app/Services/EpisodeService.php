@@ -48,6 +48,7 @@ class EpisodeService
      */
     public function processPostRequest($requestData): array
     {
+        Log::info('------processPostRequest:start------ ');
         // エピソードリストを作成
         $episodeList = $this->createEpisodeList($requestData);
         $imgPromptList = $this->getImgPromptList($requestData['theme'], $episodeList);
@@ -60,6 +61,7 @@ class EpisodeService
             $episodeList[$key]['img'] = $imgList[$key];
         }
 
+        Log::info('------processPostRequest:end------ ');
         return $episodeList;
     }
 

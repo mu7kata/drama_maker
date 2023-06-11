@@ -1,12 +1,14 @@
 <template>
     <div class="container">
-        <h1>AIドラマメーカー</h1>
+        <h1>AI あらすじメーカー</h1>
         <div>
+            <button @click="setThema('work')">仕事系</button>
+            <button @click="setThema('love')">恋愛系</button>
+            <button @click="setThema('manga')">漫画の続編</button>
+            <button @click="setThema('detective')">探偵物</button>
+            <button @click="setThema('horror')">ホラー系</button>
             <form @submit.prevent="submitForm">
-                <div>
-                    <p>テーマの例</p>
-                    <p>ファンタジー要素のある刑事物語/漫画「鬼滅の刃」の別の世界線の物語/webエンジニアの成長物語</p>
-                </div>
+
                 <label for="theme">テーマ:</label>
                 <input type="text" id="theme" name="theme" v-model="theme">
                 <p>{{ errorMessage }}</p>
@@ -48,7 +50,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -63,32 +64,93 @@ import {required} from '@vee-validate/rules';
 const {value: theme, errorMessage} = useField('theme', required);
 // const testModel = ref('');
 const episodeList = ref([]);
-const castList = reactive({
-    0: {position: '', name: ''},
-    1: {position: '', name: ''},
-    2: {position: '', name: ''},
-    3: {position: '', name: ''},
-});
+const castList = ref([
+    {position: '', name: ''},
+    {position: '', name: ''},
+    {position: '', name: ''},
+    {position: '', name: ''},
+]);
+
 const isLoading = ref(false);
 const errorMsg = ref('');
 
 
+function setThema(genre) {
+    console.log('setThema');
+    console.log(genre);
+    const themeWork = [
+        {position: '上司', name: '上柿元(男)'},
+        {position: '新人', name: '野島(男)'},
+        {position: '社長', name: '枝松(女)'},
+        {position: '競合他社社員', name: '鈴木(男)'},
+    ];
+    const themeLove = [
+        {position: '彼氏', name: 'のび太（男）'},
+        {position: '彼女', name: 'しずか（女）'},
+        {position: '親友', name: 'スネ夫（男）'},
+        {position: '元恋人', name: 'ジャイ子（女）'},
+    ];
+    const themeManga = [
+        {position: 'ロボット', name: '野島(男)'},
+        {position: 'ロボット', name: '枝松(女)'},
+        {position: '人間', name: '上柿元(男)'},
+        {position: '火星人', name: '鈴木(男)'},
+    ];
+    const themeDetective = [
+        {position: '探偵', name: '枝松(女)'},
+        {position: '助手', name: '鈴木(男)'},
+        {position: '容疑者', name: '野島(男)'},
+        {position: '秘密の情報源', name: '上柿元(男)'},
+    ];
+    const themeHorror = [
+        {position: '主人公', name: '鈴木(男)'},
+        {position: '友人', name: '枝松(女)'},
+        {position: '呪われた存在', name: '宗像（男）'},
+        {position: '犠牲者', name: '野島(男)'},
+    ];
+    if (genre === 'work') {
+        theme.value = 'IT企業戦士の奮闘物語'
+        castList.value = themeWork;
+    } else if (genre === 'horror') {
+        theme.value = '死者の館　～悪夢の迷宮～'
+        castList.value = themeHorror;
+    } else if (genre === 'manga') {
+        theme.value = '漫画「鉄腕アトム」の続編'
+        castList.value = themeManga;
+    } else if (genre === 'detective') {
+        theme.value = '悪の組織に立ち向かう探偵物語'
+        castList.value = themeDetective;
+    } else if (genre === 'love') {
+        theme.value = '愛の迷宮〜出会いと別れの連鎖、交錯する恋物語〜';
+        castList.value = themeLove;
+    }
+    //
+    // for (let i = 0; i < 4; i++) {
+    //     castList.push(data);
+    // }
+}
+
 async function submitForm() {
+    console.log(1);
     //不正クリック対策
     if (isLoading.value === true) {
         return;
     }
+    console.log(castList);
     isLoading.value = true;
     const postData = {
         theme: theme.value,
-        castList: castList,
+        castList: castList.value,
     };
+    console.log(postData);
 
     await axios.post('/api/create-episode-list', postData)
         .then(response => {
+    console.log(response.data);
             episodeList.value = response.data.episodeList;
         })
         .catch(error => {
+    console.log(5);
             console.log(error);
             errorMsg.value = 'エラーが発生しました、再度実行してください'
             // TODO:エラーが発生した場合の処理かく
@@ -96,6 +158,8 @@ async function submitForm() {
         .finally(() => {
             isLoading.value = false; // Set loading flag to false whether the request succeeded or failed
         });
+    console.log(6);
+
 }
 
 
