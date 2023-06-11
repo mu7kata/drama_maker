@@ -2,20 +2,21 @@
     <div class="container">
         <h1>AI あらすじメーカー</h1>
         <div>
+            <button @click="setThema('manga')">有名アニメの続編</button>
+            <button @click="setThema('movie')">有名映画の続編</button>
             <button @click="setThema('work')">仕事系</button>
             <button @click="setThema('love')">恋愛系</button>
-            <button @click="setThema('manga')">漫画の続編</button>
             <button @click="setThema('detective')">探偵物</button>
             <button @click="setThema('horror')">ホラー系</button>
             <form @submit.prevent="submitForm">
 
-                <label for="theme">テーマ:</label>
+                <label for="theme">テーマ</label>
                 <input type="text" id="theme" name="theme" v-model="theme">
                 <p>{{ errorMessage }}</p>
                 <div v-for="(cast, index) in castList" :key="index">
                     <label :for="'position' + index">登場人物{{ index + 1 }}</label>
                     <div class="character">
-                        <input type="text" :id="'position' + index" v-model="cast.position" placeholder="ポジション"
+                        <input type="text" :id="'position' + index" v-model="cast.position" placeholder="人物の特徴、人柄、役職など"
                                required>
                         <input type="text" :id="'name' + index" v-model="cast.name" placeholder="名前" required>
                     </div>
@@ -108,6 +109,12 @@ function setThema(genre) {
         {position: '呪われた存在', name: '宗像（男）'},
         {position: '犠牲者', name: '野島(男)'},
     ];
+    const themeMovie = [
+        {position: 'ヴォルデモートの子孫', name: '宗像(男)'},
+        {position: 'グリフィンドール生徒', name: '上柿元）'},
+        {position: 'グリフィンドール生徒', name: '野島(男)'},
+        {position: '謎の人物', name: '枝松(女)'},
+    ];
     if (genre === 'work') {
         theme.value = 'IT企業戦士の奮闘物語'
         castList.value = themeWork;
@@ -117,6 +124,9 @@ function setThema(genre) {
     } else if (genre === 'manga') {
         theme.value = '漫画「鉄腕アトム」の続編'
         castList.value = themeManga;
+    } else if (genre === 'movie') {
+        theme.value = '映画「ハリポッター」の続編'
+        castList.value = themeMovie;
     } else if (genre === 'detective') {
         theme.value = '悪の組織に立ち向かう探偵物語'
         castList.value = themeDetective;
@@ -124,10 +134,6 @@ function setThema(genre) {
         theme.value = '愛の迷宮〜出会いと別れの連鎖、交錯する恋物語〜';
         castList.value = themeLove;
     }
-    //
-    // for (let i = 0; i < 4; i++) {
-    //     castList.push(data);
-    // }
 }
 
 async function submitForm() {
@@ -143,7 +149,7 @@ async function submitForm() {
         castList: castList.value,
     };
     console.log(postData);
-
+    errorMsg.value ='';
     await axios.post('/api/create-episode-list', postData)
         .then(response => {
     console.log(response.data);
@@ -152,7 +158,7 @@ async function submitForm() {
         .catch(error => {
     console.log(5);
             console.log(error);
-            errorMsg.value = 'エラーが発生しました、再度実行してください'
+            errorMsg.value = '生成に失敗しました、再度実行してください'
             // TODO:エラーが発生した場合の処理かく
         })
         .finally(() => {
