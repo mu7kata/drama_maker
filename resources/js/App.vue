@@ -3,7 +3,7 @@
         <h1><a class="text-decoration-none text-black" href="/">AI あらすじメーカー</a></h1>
         <div class="">
             <div class="mb-2">
-                <p>入力した情報に基に、6話分のあらすじがAIにて自動生成されます</p>
+                <p>入力した情報に基に、6話分のあらすじがAIにて自動生成されます。</p>
             </div>
             <div v-if="episodeList.length" class="mb-5 border">
                 <h2 class="px-5 pt-3">テーマ：{{ theme }}</h2>
