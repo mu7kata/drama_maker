@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIドラマメーカー</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
             background: #e0e0e0;
@@ -42,6 +41,9 @@
     </style>
 </head>
 <body>
-<div id="app"></div>
+<div class="container">
+    <div class="header">AIドラマメーカー</div>
+    <a href="/home" class="link-start">スタート</a>
+</div>
 </body>
 </html>
