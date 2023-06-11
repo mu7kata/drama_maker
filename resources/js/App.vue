@@ -28,7 +28,7 @@
         <div class="">
             <form class="bg-light border w-75" @submit.prevent="submitForm">
                 <div class="w-75　mb-3">
-                    <p>テンプレートから選ぶ （選択するとサンプルが入力欄に挿入されます）</p>
+                    <p>テンプレートから選ぶ （選択するとサンプルが力欄に挿入されます）</p>
                     <div class="btn-group">
                         <button class="m-1 rounded　btn btn-sm btn-outline-secondary"
                                 @click.prevent="setThema('detective')">探偵物
