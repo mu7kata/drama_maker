@@ -65,6 +65,11 @@
         .character input[type=text] {
             width: 46%; /* ある程度の間隔を保つために 50% 未満に設定 */
         }
+        img{
+            width: 216px;
+            height: 170px;
+            object-fit:cover;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -121,11 +126,20 @@
         </form>
     </div>
     <div>
-        {{ session('error') }}
+        <div>
+        <p style="color: orangered">{{ session('error') }}</p>
+        </div>
         @if (!empty($episodeList))
             @foreach ($episodeList as $episode)
                 <h2>{{ $episode['title'] }}</h2>
-                <p>{{ $episode['summary'] }}</p>
+                <div style="display: flex;">
+                    <div>
+                        <img width="216" height="170" src="{{ $episode['img'] }}" alt="">
+                    </div>
+                    <div style="margin-left: 30px;">
+                        <p style="margin: 0">{{ $episode['summary'] }}</p>
+                    </div>
+                </div>
             @endforeach
         @endif
     </div>
