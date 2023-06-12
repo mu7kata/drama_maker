@@ -11,7 +11,9 @@ http://munakata-games.achoo.jp/home
 
 ### 技術スタック
 Laravel ver.10.8
+
 Vue.js ver 3.2
+
 Bootstrap ver5.30
 
 
