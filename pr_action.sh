@@ -6,6 +6,9 @@ echo ""
 # gh pr createの出力を変数に保存
 result_create_pr=$(gh pr create --base deployment/production --head main --title "Your PR title" --body "Your PR description")
 echo ""
+echo "成功しました"
+echo ""
+echo "↓作成したPRのリンク"
 echo "$result_create_pr"
 if [[ -z "$result_create_pr" ]]; then
     echo "↑エラーログ"
@@ -14,7 +17,6 @@ if [[ -z "$result_create_pr" ]]; then
     echo ""
     exit 1
 fi
-echo "成功しました"
 echo ""
 
 echo "--------------------------------------------------------------------------------------------"
@@ -34,11 +36,10 @@ if [[ -z "$result_show_commit_log" ]]; then
     echo ""
     exit 1
 fi
-echo "成功しました"
 echo ""
 
 echo "--------------------------------------------------------------------------------------------"
-echo "処理を選択してください"
+echo "🔻 作業履歴に意図しない差分が含まれていないか確認後、次の処理を選択してください"
 echo "1. mergeして本番化作業を開始する 2. 処理を終了する"
 read selectNumber
 echo ""
@@ -49,7 +50,7 @@ if [[ $selectNumber -eq 1 ]]; then
     echo ""
     echo "$result_show_commit_log"
 
-    result_pr_merge=$(gh pr merge "$pr_number" --merge  --auto)
+    result_pr_merge=$(gh pr merge "$pr_number" --merge  --auto) >/dev/null 2>&1
 
     echo "$result_pr_merge"
     if [[ -z "$result_pr_merge" ]]; then
