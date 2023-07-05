@@ -6,7 +6,7 @@ echo ""
 # gh pr createの出力を変数に保存
 result_show_commit_log=$(gh pr create --base deployment/production --head main --title "Your PR title" --body "Your PR description")
 echo ""
-echo "result_show_commit_log"
+echo "$result_show_commit_log"
 if [[ -z "$result_show_commit_log" ]]; then
      echo "↑エラーログ"
      echo ""
@@ -45,6 +45,18 @@ echo ""
 if [[ selectNumber -eq 1 ]]; then
 echo "--------------------------------------------------------------------------------------------"
 echo "「1」が選択されました、マージ処理を実行します。"
+echo ""
+echo "$result_show_commit_log"
+
+result_pr_merge=$(gh pr merge "$pr_number" --merge  --auto)
+
+echo "$result_pr_merge";
+if [[ -z "$result_pr_merge" ]]; then
+     echo "↑エラーログ"
+     echo ""
+     echo "gh pr merge コマンドが失敗しました:"
+     echo ""
+     exit 1
 fi
 
 
