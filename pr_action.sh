@@ -7,13 +7,13 @@ echo ""
 result_show_commit_log=$(gh pr create --base deployment/production --head main --title "Your PR title" --body "Your PR description")
 echo ""
 echo "result_show_commit_log"
-#if [[ -z "$result_show_commit_log" ]]; then
-#     echo "↑エラーログ"
-#     echo ""
-#     echo "gh pr create コマンドが失敗しました:"
-#     echo ""
-#     exit 1
-#fi
+if [[ -z "$result_show_commit_log" ]]; then
+     echo "↑エラーログ"
+     echo ""
+     echo "gh pr create コマンドが失敗しました:"
+     echo ""
+     exit 1
+fi
 echo "成功しました"
 echo ""
 
