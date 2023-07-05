@@ -7,8 +7,8 @@ echo ""
 result_create_pr=$(gh pr create --base deployment/production --head main --title "Your PR title" --body "Your PR description")
 echo ""
 echo "成功しました"
+echo "↓作成されたPRのリンクは下記です"
 echo ""
-echo "↓作成したPRのリンク"
 echo "$result_create_pr"
 if [[ -z "$result_create_pr" ]]; then
     echo "↑エラーログ"
@@ -48,7 +48,7 @@ if [[ $selectNumber -eq 1 ]]; then
     echo "--------------------------------------------------------------------------------------------"
     echo "「1」が選択されました、マージ処理を実行します。"
     echo ""
-    echo "$result_show_commit_log"
+
 
     result_pr_merge=$(gh pr merge "$pr_number" --merge  --auto) >/dev/null 2>&1
 
