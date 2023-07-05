@@ -2,36 +2,37 @@
 
 echo "--------------------------------------------------------------------------------------------"
 echo "🔻 本番化用のPRを作成します";
-
-# gh pr createの出力を変数に保存
-output=$(gh pr create --base deployment/production --head main --title "Your PR title" --body "Your PR description")
 echo ""
-
-# エラーチェック
-if [[ $? -ne 0 ]]; then
-    echo "🚨🚨 本番化作業に失敗しました 🚨🚨"
-    echo ""
-    echo "↓エラー内容"
-    echo "gh pr create コマンドが失敗しました:"
-
-    echo "$output"
-    exit 1
-fi
+# gh pr createの出力を変数に保存
+result_show_commit_log=$(gh pr create --base deployment/production --head main --title "Your PR title" --body "Your PR description")
+echo ""
+#if [[ -z "$result_show_commit_log" ]]; then
+#     echo "↑エラーログ"
+#     echo ""
+#     echo "gh pr create コマンドが失敗しました:"
+#     echo ""
+#     exit 1
+#fi
+echo "成功しました"
 
 # output変数からPRのURLを抽出し、そのURLの最後の部分（PR番号）を取得
-pr_number=$(echo "$output" | grep -o 'https://github.com/.*/pull/[0-9]*' | awk -F '/' '{print $NF}')
+pr_number=$(echo "$result_create_pr" | grep -o 'https://github.com/.*/pull/[0-9]*' | awk -F '/' '{print $NF}')
 echo ""
 echo "--------------------------------------------------------------------------------------------"
 echo "🔻 本番化対象の作業履歴(commit)です。意図しない差分が含まれていないか確認してください";
 echo "";
-if gh pr view "$pr_number" --json commits --jq '.commit[] | "ユーザー：\(.authors[].name) | \(.messageHeadline) - "' >/dev/null 2>&1 ; then
-      echo "succeeded";
-else
-      echo "failed";
-      echo "gh pr view コマンドが失敗しました:"
-      exit 1
-fi
 
+result_show_commit_log=$(gh pr view "$pr_number" --json commits --jq '.commits[] | "ユーザー：\(.authors[].name) | \(.messageHeadline) - "') >/dev/null 2>&1
+
+echo "$result_show_commit_log";
+if [[ -z "$result_show_commit_log" ]]; then
+  echo ""
+  echo "↑エラーログ"
+  echo "gh pr view コマンドが失敗しました:"
+  echo ""
+  exit 1
+fi
+echo "成功しました"
 
 
 echo "--------------------------------------------------------------------------------------------"
@@ -42,8 +43,8 @@ echo ""
 if [[ selectNumber -eq 1 ]]; then
 echo "--------------------------------------------------------------------------------------------"
 echo "「1」が選択されました、マージ処理を実行します。"
-
 fi
+
 
 
 if [[ selectNumber -eq 2 ]]; then
